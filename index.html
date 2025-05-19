@@ -6,12 +6,25 @@
     <title>sprint</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
-<body onload="onInit()">
+<body onload="openModal('.modal')" >
     <h1> liad Mine Sweeper</h1>
     
     <div>
+        <div class="modal ">
+            <h2>Choose your level</h2>
+            <button class="level" onclick="chooseLevel(this)">Beginner</button>
+            <button class="level" onclick="chooseLevel(this)">Medium</button>
+            <button class="level" onclick="chooseLevel(this)">Expert</button>
+        </div>
         <div class="lives"> 3 lives left </div>
+        <button class="smiley">😀</button>
         <div class="watch"> 00 </div>
+        <div class="lasttime">last score</div>
+        <div class="light"> 
+            <button class="hint" onclick="onHints(this)"> 💡 </button>
+            <button class="hint" onclick="onHints(this)"> 💡 </button>
+            <button class="hint" onclick="onHints(this)"> 💡 </button>
+        </div>
         <table class="board" >
 
         </table>

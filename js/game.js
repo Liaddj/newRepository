@@ -61,6 +61,7 @@ function onInit() {
 
     gGame.isVictory = false
     gGame.isOn = true
+    isFirstClick = true
 
     gBoard = buildBoard()
     renderBoard(gBoard)
@@ -88,9 +89,9 @@ function buildBoard() {
 
 }
 
-function setBoard() {
+function setBoard(i, j) {
     if (isFirstClick) {
-        createMines(gLevel.MINES, gBoard)
+        createMines(gLevel.MINES, gBoard, i, j)
         setMinesNegsCount(gBoard)
         isFirstClick = false
     }
@@ -143,12 +144,14 @@ function onCellClicked(elCell, i, j) {
         markedCount: gGame.markedCount,
         isFirstClick: isFirstClick,
     }
-  
+
 
     if (!lives) return
 
 
-    if (isFirstClick) setBoard()
+    if (isFirstClick) {
+        setBoard(i, j)
+    }
 
     if (gBoard[i][j].isRevealed) return
 
@@ -231,18 +234,19 @@ function onCellMarked(elCell, i, j) {
 
 
 
-function createMines(minesNum, board) {
+function createMines(minesNum, board, i, j) {
     const size = board.length
     var placed = 0
 
     while (placed < minesNum) {
-        const i = getRandomInt(0, size)
-        const j = getRandomInt(0, size)
+        
+        const p = getRandomInt(0, size)
+        const c = getRandomInt(0, size)
+        if (p === i && c === j) continue
 
-
-        if (!board[i][j].isMine) {
-            board[i][j].isMine = true
-            console.log(i, j)
+        if (!board[p][c].isMine) {
+            board[p][c].isMine = true
+            console.log(p, c)
             placed++
         }
     }
@@ -339,7 +343,7 @@ function revealedSafeCell() {
     var safeCell = document.querySelector(`.cell-${pos.i}-${pos.j}`)
     safeCell.classList.add('revealed')
     safeCell.innerText = gBoard[pos.i][pos.j].minesAroundCount
-    
+
     setTimeout(() => {
         safeCell.classList.remove('revealed')
         safeCell.innerText = EMPTY
@@ -409,6 +413,8 @@ function darkMode() {
     console.log('dark')
     const elBody = document.querySelector('body')
     elBody.classList.toggle('dark')
+    const elButtons = document.querySelectorAll('button')
+    elButtons.classList.toggle('darkButton')
 }
 
 function saveLastTable(board) {
@@ -449,8 +455,8 @@ function undo() {
                 elCell.classList.add('revealed')
                 if (gBoard[i][j].isMine) {
                     elCell.innerText = MINE
-                
-                 } else if (gBoard[i][j].minesAroundCount > 0) {
+
+                } else if (gBoard[i][j].minesAroundCount > 0) {
                     elCell.innerText = gBoard[i][j].minesAroundCount
                 } else {
                     elCell.innerText = EMPTY

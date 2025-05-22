@@ -21,7 +21,6 @@ const mine = {
     j: 0,
 }
 
-
 const MINE = '💣'
 const FLAG = '⛳️'
 const EMPTY = ''
@@ -35,17 +34,34 @@ var isFirstClick = false
 var lives = 3
 var isCount = false
 var gTimeInterval
-var gLastBestScore = 0
-
+var gHintsLeft = 3
+var gLastBestScore = Infinity
+var gHint = 0
+var gSafeLeft = 3
+var gLastTable = saveLastTable(gBoard)
+var gLastStats = null
 
 function onInit() {
+    if (gTimeInterval) clearInterval(gTimeInterval)
     const elSmiley = document.querySelector('.smiley')
+
     elSmiley.innerText = HAPPYSMILEY
+
+    const saveBestScore = localStorage.getItem('time')
+    gLastBestScore = saveBestScore ? +saveBestScore : Infinity
+    const elLastTime = document.querySelector('.lasttime')
+    elLastTime.innerText = `${gLastBestScore}`
+
+
+    gHintsLeft = 3
+    gSafeLeft = 3
     gGame.revealedCount = 0
     gGame.markedCount = 0
     gGame.secsPassed = 0
+
     gGame.isVictory = false
     gGame.isOn = true
+
     gBoard = buildBoard()
     renderBoard(gBoard)
     gTimeInterval = setInterval(updateTime, 1000)
@@ -120,17 +136,30 @@ function renderBoard(board) {
 function onCellClicked(elCell, i, j) {
     if (!gGame.isOn) return
 
-    if (isFirstClick) setBoard()
+    gLastStats = {
+        board: saveLastTable(gBoard),
+        lives: lives,
+        revealedCount: gGame.revealedCount,
+        markedCount: gGame.markedCount,
+        isFirstClick: isFirstClick,
+    }
+  
 
+    if (!lives) return
+
+
+    if (isFirstClick) setBoard()
 
     if (gBoard[i][j].isRevealed) return
 
+
     if (gGame.isHint) {
+        gGame.isHint = true
         hintMode(elCell, i, j)
         return
     }
 
-    // if (gBoard[i][j].isMarked) lives--
+    console.log(gLastStats)
 
     thereMine(elCell, i, j)
 
@@ -151,19 +180,25 @@ function onCellClicked(elCell, i, j) {
     CheckGameOver()
 }
 
-function onHints(elCell) {
+function onHints(elBtn) {
+    if (!gHintsLeft) return
     gGame.isHint = true
-    elCell.classList.add('hintRevealed')
+
+    elBtn.classList.add('hintRevealed')
+
     setTimeout(() => {
-        elCell.classList.remove('hintRevealed')
-        gGame.isHint = false
-        console.log(gGame.isHint)
-    }, 2000);
+        elBtn.classList.remove('hintRevealed')
+    }, 2200);
 }
 
-function hintMode(elCell, i, j) {
 
+function hintMode(elCell, i, j) {
+    if (gBoard[i][j].isRevealed) return
+    if (gHint) return
+    gHintsLeft--
+    gHint++
     elCell.classList.add('revealed')
+
     if (gBoard[i][j].isMine) elCell.innerText = MINE
     if (gBoard[i][j].minesAroundCount) {
         elCell.innerText = gBoard[i][j].minesAroundCount
@@ -171,8 +206,9 @@ function hintMode(elCell, i, j) {
     setTimeout(() => {
         elCell.classList.remove('revealed')
         elCell.innerText = EMPTY
+        gHint--
         gGame.isHint = false
-    }, 1500);
+    }, 1700);
 }
 
 
@@ -214,9 +250,6 @@ function createMines(minesNum, board) {
 
 function CheckGameOver() {
     const maxCells = gLevel.SIZE ** 2 - gLevel.MINES
-    console.log(maxCells)
-    console.log(gGame.revealedCount)
-    console.log(gGame.markedCount)
 
     if (gGame.revealedCount === maxCells && gGame.markedCount === gLevel.MINES) {
         console.log('victory')
@@ -226,11 +259,12 @@ function CheckGameOver() {
 
         gGame.isOn = false
         gGame.isVictory = true
-       
-        // showLastLocalStorage()
+
+        showLastLocalStorage()
 
         setTimeout(() => {
             clearInterval(gTimeInterval)
+            openModal('.modal')
             onInit()
         }, 1000);
     }
@@ -252,6 +286,9 @@ function expandReveal(board, elCell, i, j) {
                         if (board[p][c].minesAroundCount) elNeg.innerText = board[p][c].minesAroundCount
                     }
                     elNeg.classList.add('revealed')
+
+                    if (!board[p][c].minesAroundCount) expandReveal(board, elNeg, p, c)
+
                 }
                 CheckGameOver()
             }
@@ -271,9 +308,42 @@ function thereMine(elCell, i, j) {
         setTimeout(() => {
             elCell.innerText = EMPTY
             if (!lives) gameOver()
-        }, 300);
+        }, 100);
         return
     }
+}
+
+function findRandomSafeCell(board) {
+    const safeCells = []
+    var safeCell
+    for (var i = 0; i < board.length; i++) {
+        for (var j = 0; j < board[0].length; j++) {
+            if (!board[i][j].isRevealed) {
+                if (!gBoard[i][j].isMine) {
+                    safeCells.push({ i: i, j: j })
+                }
+            }
+        }
+    }
+    const randNum = getRandomInt(0, safeCells.length - 1)
+    return safeCells[randNum]
+}
+
+function revealedSafeCell() {
+    if (!gSafeLeft) return
+    if (isFirstClick) return
+    gSafeLeft--
+
+    var pos = findRandomSafeCell(gBoard)
+
+    var safeCell = document.querySelector(`.cell-${pos.i}-${pos.j}`)
+    safeCell.classList.add('revealed')
+    safeCell.innerText = gBoard[pos.i][pos.j].minesAroundCount
+    
+    setTimeout(() => {
+        safeCell.classList.remove('revealed')
+        safeCell.innerText = EMPTY
+    }, 1500);
 }
 
 function gameOver() {
@@ -286,6 +356,7 @@ function gameOver() {
         gGame.isOn = false
         gGame.isVictory = true
         clearInterval(gTimeInterval)
+        openModal('.modal')
         onInit()
 
     }, 1000);
@@ -317,29 +388,80 @@ function updateTime() {
         const elWatch = document.querySelector('.watch')
         gGame.secsPassed++
 
-        const seconds = gGame.secsPassed
         elWatch.innerText = `${gGame.secsPassed}`
-
     }
 }
 
 function showLastLocalStorage() {
     if (!gGame.isVictory) return
 
-    const x = document.querySelector('.lasttime')
-    gLastBestScore = +localStorage.getItem('time', gGame.secsPassed) 
-    
-    if (gGame.secsPassed > gLastBestScore) {
+    const elLastTime = document.querySelector('.lasttime')
+    if (gGame.secsPassed < gLastBestScore) {
+        gLastBestScore = gGame.secsPassed
         localStorage.setItem('time', gGame.secsPassed)
-        
-        x.innerText = `${gGame.secsPassed}`
-        
-    } else {
-        
-        // console.log(gLastBestScore,'LAST')
-        x.innerText = `${gLastBestScore}`
-        
     }
+
+    elLastTime.innerText = `${gLastBestScore}`
+
 }
 
+function darkMode() {
+    console.log('dark')
+    const elBody = document.querySelector('body')
+    elBody.classList.toggle('dark')
+}
 
+function saveLastTable(board) {
+    var newBoard = []
+
+    for (var i = 0; i < board.length; i++) {
+        newBoard.push([])
+        for (var j = 0; j < board[0].length; j++) {
+            newBoard[i][j] = {
+                minesAroundCount: board[i][j].minesAroundCount,
+                isRevealed: board[i][j].isRevealed,
+                isMine: board[i][j].isMine,
+                isMarked: board[i][j].isMarked
+            }
+        }
+
+    }
+    return newBoard
+}
+
+function undo() {
+    if (!gLastTable) return
+
+    gBoard = saveLastTable(gLastStats.board)
+    lives = gLastStats.lives
+    gGame.revealedCount = gLastStats.revealedCount
+    gGame.markedCount = gLastStats.markedCount
+    isFirstClick = gLastStats.isFirstClick
+
+
+    renderBoard(gBoard)
+
+    for (var i = 0; i < gBoard.length; i++) {
+        for (var j = 0; j < gBoard[0].length; j++) {
+            const elCell = document.querySelector(`.cell-${i}-${j}`)
+
+            if (gBoard[i][j].isRevealed) {
+                elCell.classList.add('revealed')
+                if (gBoard[i][j].isMine) {
+                    elCell.innerText = MINE
+                
+                 } else if (gBoard[i][j].minesAroundCount > 0) {
+                    elCell.innerText = gBoard[i][j].minesAroundCount
+                } else {
+                    elCell.innerText = EMPTY
+                }
+            } else {
+                elCell.classList.remove('revealed')
+                if (!gBoard[i][j].isMarked) elCell.innerText = gBoard[i][j] ? EMPTY : FLAG
+            }
+        }
+    }
+
+    const elLives = document.querySelector('.lives')
+    elLives.innerText = `${lives} lives left`
+}

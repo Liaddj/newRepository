@@ -1,31 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>sprint</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
-<body onload="openModal('.modal')" >
+
+<body onload="openModal('.modal')">
     <h1> liad Mine Sweeper</h1>
-    
-    <div>
+
+    <div class="information">
         <div class="modal ">
             <h2>Choose your level</h2>
             <button class="level" onclick="chooseLevel(this)">Beginner</button>
             <button class="level" onclick="chooseLevel(this)">Medium</button>
             <button class="level" onclick="chooseLevel(this)">Expert</button>
         </div>
+        <div class="mode">
+            <button class="modes" onclick="darkMode()">dark mode</button>
+        </div>
         <div class="lives"> 3 lives left </div>
         <button class="smiley">😀</button>
+        <button class="undo" onclick="undo()">undo</button>
         <div class="watch"> 00 </div>
-        <div class="lasttime">last score</div>
-        <div class="light"> 
-            <button class="hint" onclick="onHints(this)"> 💡 </button>
-            <button class="hint" onclick="onHints(this)"> 💡 </button>
-            <button class="hint" onclick="onHints(this)"> 💡 </button>
+
+        <div class="lasttime">
+            <span class="lasttimebeginner">Beginner bset score</span>
+            <span class="lasttimemedium">Medium best score</span>
+            <span class="lasttimeexpert">Expert best score</span>
         </div>
-        <table class="board" >
+
+        <div class="light">
+            <span class="hint" onclick="onHints(this)"> 💡 </span>
+            <span class="safe" onclick="revealedSafeCell()"> safe button </span>
+        </div>
+        <table class="board">
 
         </table>
     </div>
@@ -33,4 +44,5 @@
     <script src="js/game.js"></script>
     <script src="js/util.js"></script>
 </body>
+
 </html>

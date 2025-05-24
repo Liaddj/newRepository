@@ -268,7 +268,6 @@ function CheckGameOver() {
 
         setTimeout(() => {
             clearInterval(gTimeInterval)
-            openModal('.modal')
             onInit()
         }, 1000);
     }
@@ -360,32 +359,47 @@ function gameOver() {
         gGame.isOn = false
         gGame.isVictory = true
         clearInterval(gTimeInterval)
-        openModal('.modal')
         onInit()
 
     }, 1000);
 }
 
+// function chooseLevel(elButton) {
+//     if (elButton.innerText === 'Beginner') {
+//         gLevel.SIZE = 4
+//         gLevel.MINES = 2
+//         closeModal('.modal')
+//         onInit()
+
+//     } else if (elButton.innerText === 'Medium') {
+//         gLevel.SIZE = 8
+//         gLevel.MINES = 14
+//         closeModal('.modal')
+//         onInit()
+
+//     } else if (elButton.innerText === 'Expert') {
+//         gLevel.SIZE = 12
+//         gLevel.MINES = 32
+//         closeModal('.modal')
+//         onInit()
+//     }
+// }
 function chooseLevel(elButton) {
-    if (elButton.innerText === 'Beginner') {
+    if (elButton.classList.contains('begginer')) {
         gLevel.SIZE = 4
         gLevel.MINES = 2
-        closeModal('.modal')
         onInit()
-
-    } else if (elButton.innerText === 'Medium') {
+    } else if (elButton.classList.contains('medium')) {
         gLevel.SIZE = 8
         gLevel.MINES = 14
-        closeModal('.modal')
         onInit()
-
-    } else if (elButton.innerText === 'Expert') {
+    } else if (elButton.classList.contains('Expert')) {
         gLevel.SIZE = 12
         gLevel.MINES = 32
-        closeModal('.modal')
         onInit()
     }
 }
+
 
 function updateTime() {
     if (gGame.isOn) {

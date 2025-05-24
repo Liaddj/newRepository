@@ -8,15 +8,16 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 
-<body onload="openModal('.modal')">
+<body onload="onInit()">
     <h1> liad Mine Sweeper</h1>
 
     <div class="information">
-        <div class="modal ">
+        <div class="difficulty">
             <h2>Choose your level</h2>
-            <button class="level" onclick="chooseLevel(this)">Beginner</button>
-            <button class="level" onclick="chooseLevel(this)">Medium</button>
-            <button class="level" onclick="chooseLevel(this)">Expert</button>
+            <label>   <input type="radio" class="level begginer" name="difficulty" onclick="chooseLevel(this)"  /> beginner  </label>
+            <label>   <input type="radio" class="level medium" name="difficulty" onclick="chooseLevel(this)"  /> medium  </label>
+            <label>   <input type="radio" class="level Expert" name="difficulty" onclick="chooseLevel(this)"  /> Expert  </label>
+            
         </div>
         <div class="mode">
             <button class="modes" onclick="darkMode()">dark mode</button>
